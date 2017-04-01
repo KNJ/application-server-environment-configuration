@@ -1,0 +1,41 @@
+{
+    "name": "asec_test",
+    "number": 18,
+    "public": true,
+    "private": false,
+    "deep": {
+        "and": {
+            "deep": {
+                "key": "here",
+                "and": {
+                    "mazed": {
+                        "key": "there"
+                    }
+                }
+            }
+        }
+    },
+    "object": {
+        "and": {
+            "list": [
+                {
+                    "id": 1,
+                    "name": "Alice"
+                },
+                {
+                    "id": 2,
+                    "name": "Bob"
+                },
+                {
+                    "id": 3,
+                    "name": "Eve"
+                }
+            ]
+        }
+    },
+    "items": [
+        "foo",
+        "bar",
+        "baz"
+    ]
+}
