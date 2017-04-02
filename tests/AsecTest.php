@@ -118,6 +118,50 @@ class AsecTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @depends testGetString
+     */
+    public function testSetString()
+    {
+        $str = '文字列';
+        $this->assertSame($str, Asec::set('set.string', $str));
+        $this->assertSame($str, Asec::get('set.string'));
+    }
+
+    /**
+     * @depends testGetInt
+     */
+    public function testSetInt()
+    {
+        $num = 2017;
+        $this->assertSame($num, Asec::set('set.int', $num));
+        $this->assertSame($num, Asec::get('set.int'));
+    }
+
+    /**
+     * @depends testGetArray
+     */
+    public function testSetArray()
+    {
+        $list = ['一', '二', '三', '四'];
+        $this->assertArraySubset($list, Asec::set('set.list', $list));
+        $this->assertSame($list, Asec::get('set.list'));
+
+        $kv = [
+            'name' => 'KNJ',
+            'status' => 0,
+            'awards' => [],
+            'languages' => ['Japanese', 'English'],
+            'accounts' => [
+                'github' => 'KNJ',
+                'twitter' => 'Kanjasan',
+                'facebook' => null,
+            ]
+        ];
+        $this->assertArraySubset($kv, Asec::set('set.kv', $kv));
+        $this->assertSame($kv, Asec::get('set.kv'));
+    }
+
+    /**
+     * @depends testGetString
      * @depends testGetDefault
      */
     public function testDelete()

@@ -90,7 +90,7 @@ final class Asec
      *
      * 末端キーに対応する値を返す
      *
-     * @param  string $selector Position of the end key
+     * @param  string $selector Position of an end key
      * @param  mixed  $default  Default value (in case the key is not found)
      * @return mixed
      */
@@ -105,7 +105,7 @@ final class Asec
     }
 
     /**
-     * take() returns the value of the key.
+     * take() returns the value of a key.
      * It is recommended that you use get() if you want to get single value.
      * This method is for getting nested an array or an object.
      *
@@ -130,6 +130,23 @@ final class Asec
         }
 
         return $head;
+    }
+
+    /**
+     * set() sets the value of a key.
+     *
+     * キーに値をセットする
+     *
+     * @param  string $selector Position of the key
+     * @param  mixed  $value    Value of the key
+     * @return mixed            New value of the key
+     */
+    public static function set(string $selector, $value)
+    {
+        self::getInstance();
+        self::$temporary[$selector] = $value;
+
+        return $value;
     }
 
     /**
