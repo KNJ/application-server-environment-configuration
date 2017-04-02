@@ -8,9 +8,9 @@ class Buffer
 
     public function pool(string $action, string $selector)
     {
-        if (!isset($this->pooled[$action])) {
-            $this->pooled[$action] = [];
-        }
-        $this->pooled[$action][] = $selector;
+        $this->pooled[] = (object)[
+            'action' => $action,
+            'selector' => $selector,
+        ];
     }
 }

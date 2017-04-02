@@ -224,15 +224,16 @@ final class Asec
      */
     private function rebuild(Buffer $buffer): void
     {
-        // Buffered "delete"
-        foreach ($this->buffer->pooled['delete'] ?? [] as $selector) {
-            $head = &self::$master;
-            $arr = explode('.', $selector);
-            foreach ($arr as $key) {
-                if (!isset($head->$key)) {
-                    break;
+        foreach ($this->buffer->pooled ?? [] as $p) {
+            if ($p->action === 'delete') {
+                $head = &self::$master;
+                $arr = explode('.', $p->selector);
+                foreach ($arr as $key) {
+                    if (!isset($head->$key)) {
+                        break;
+                    }
+                    $head = &$head->$key;
                 }
-                $head = &$head->$key;
             }
 
             $value = $head;
