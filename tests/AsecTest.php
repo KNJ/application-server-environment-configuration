@@ -85,11 +85,11 @@ class AsecTest extends \PHPUnit\Framework\TestCase
     public function testTakeMultipleValues()
     {
         $this->assertEquals(
-            (object)[
-                'deep' => (object)[
+            [
+                'deep' => [
                     'key' => 'here',
-                    'and' => (object)[
-                        'mazed' => (object)[
+                    'and' => [
+                        'mazed' => [
                             'key' => 'there',
                         ]
                     ]
@@ -99,15 +99,15 @@ class AsecTest extends \PHPUnit\Framework\TestCase
         );
         $this->assertArraySubset(
             [
-                (object)[
+                [
                     'id' => 1,
                     'name' => 'Alice',
                 ],
-                (object)[
+                [
                     'id' => 2,
                     'name' => 'Bob',
                 ],
-                (object)[
+                [
                     'id' => 3,
                     'name' => 'Eve',
                 ]
@@ -162,6 +162,30 @@ class AsecTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @depends testGetString
+     * @depends testGetArray
+     * @depends testTakeMultipleValues
+     */
+    public function testAssign()
+    {
+        $mass = [
+            'app' => [
+                'name' => 'Asec',
+                'environments' => [
+                    'production',
+                    'development',
+                    'test',
+                ],
+            ]
+        ];
+
+        $this->assertArraySubset($mass, Asec::assign($mass));
+        $this->assertSame($mass['app']['name'], Asec::get('app.name'));
+        $this->assertArraySubset($mass['app']['environments'], Asec::get('app.environments'));
+        $this->assertEquals($mass['app'], Asec::take('app'));
+    }
+
+    /**
+     * @depends testGetString
      * @depends testGetDefault
      */
     public function testDelete()
@@ -170,10 +194,10 @@ class AsecTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('asec_test', Asec::delete('name'));
         $this->assertNull(Asec::get('name'));
         $this->assertEquals(
-            (object)[
+            [
                 'key' => 'here',
-                'and' => (object)[
-                    'mazed' => (object)[
+                'and' => [
+                    'mazed' => [
                         'key' => 'there',
                     ]
                 ]
@@ -184,5 +208,48 @@ class AsecTest extends \PHPUnit\Framework\TestCase
         // Hard delete and rebuild
         $this->assertNull(Asec::take('deep.and.deep'));
         $this->assertNull(Asec::get('name'));
+    }
+
+    /**
+     * @depends testSetString
+     * @depends testDelete
+     */
+    public function testMultipleActions()
+    {
+        // set -> delete
+        $selector = 'this.message.will.be.deleted.soon';
+        Asec::set($selector, 'remain');
+        Asec::delete($selector);
+        $this->assertNull(Asec::get($selector));
+
+        // assign => delete
+        $mass = [
+            'I' => [
+                'am' => [
+                    'a' => 'hero',
+                    'an' => 'evil',
+                ]
+            ]
+        ];
+        Asec::assign($mass);
+        Asec::delete('I.am.a');
+        $this->assertNull(Asec::get('I.am.a'));
+
+        // assign => set
+        Asec::set('I.was.a', 'champion');
+        $this->assertSame('champion', Asec::get('I.was.a'));
+
+        // assign => take
+        $this->assertArraySubset(
+            [
+                'am' => [
+                    'an' => 'evil',
+                ],
+                'was' => [
+                    'a' => 'champion',
+                ]
+            ],
+            Asec::take('I')
+        );
     }
 }

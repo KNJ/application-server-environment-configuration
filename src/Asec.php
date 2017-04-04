@@ -17,7 +17,7 @@ final class Asec
     private static $permanent = false;
     private $buffer;
 
-    public function boot(): void
+    public function boot()
     {
         $path = __DIR__;
 
@@ -27,7 +27,8 @@ final class Asec
             if (file_exists($path . '/' . self::$filename)) {
                 self::$root = $path;
                 self::$master = json_decode(
-                    file_get_contents($path . '/' . self::$filename)
+                    file_get_contents($path . '/' . self::$filename),
+                    true
                 );
                 if (is_null(self::$master)) {
                     throw new RuntimeException('Invalid JSON format.');
@@ -57,7 +58,7 @@ final class Asec
      * @throws BadMethodCallException Must be called before boot()
      * @return void
      */
-    public static function configure(array $conf = []): void
+    public static function configure(array $conf = [])
     {
         if (self::hasInstance() === true) {
             throw new BadMethodCallException('Asec::configure() must be called before the instance is created.');
@@ -119,14 +120,17 @@ final class Asec
      */
     public static function take(string $selector, $default = null)
     {
-        self::getInstance();
+        $instance = self::getInstance();
+        if ($instance->buffer->isEmpty() === false) {
+            $instance->rebuild(new Buffer);
+        }
         $head = &self::$master;
         $arr = explode('.', $selector);
         foreach ($arr as $key) {
-            if (!isset($head->$key)) {
+            if (!isset($head[$key])) {
                 return $default;
             }
-            $head = &$head->$key;
+            $head = &$head[$key];
         }
 
         return $head;
@@ -143,14 +147,37 @@ final class Asec
      */
     public static function set(string $selector, $value)
     {
-        self::getInstance();
+        self::getInstance()->buffer->pool('set', $selector, $value);
         self::$temporary[$selector] = $value;
 
         return $value;
     }
 
     /**
-     * delete() unsets the key.
+     * assign() sets the value of keys recursively.
+     *
+     * 再帰的にキーに値をセットする
+     *
+     * @param  array $mass Associative array
+     * @return array
+     */
+    public static function assign(array $mass): array
+    {
+        $list = [];
+        $instance = self::getInstance();
+        $instance->walk($mass, '', $list);
+
+        foreach ($list as $selector => $value) {
+            $instance->set($selector, $value);
+        }
+
+        $instance->rebuild(new Buffer);
+
+        return $mass;
+    }
+
+    /**
+     * delete() unsets a key.
      *
      * キーを削除する
      *
@@ -167,10 +194,10 @@ final class Asec
             $head = &self::$master;
             $arr = explode('.', $selector);
             foreach ($arr as $key) {
-                if (!isset($head->$key)) {
+                if (!isset($head[$key])) {
                     return $value;
                 }
-                $head = &$head->$key;
+                $head = &$head[$key];
             }
 
             $value = $head;
@@ -196,17 +223,17 @@ final class Asec
      * @param  array  &$table   Converted temporary list
      * @return void
      */
-    private function walk(array $data, string $position, array &$table): void
+    private function walk(array $data, string $position, array &$table)
     {
         foreach ($data as $key => $value) {
             $current_position = $position . $key;
 
-            // 連想配列でない配列はそれをキーに対する値とする
+            // Associative array
             if (
-                (is_array($value) || is_object($value)) &&
-                array_values((array)$value) !== $value
+                is_array($value) && array_values((array)$value) !== $value
             ) {
                 $this->walk((array)$value, $current_position . '.', $table);
+            // Indexed array
             } else {
                 $table[$current_position] = $value;
                 $current_position = $position;
@@ -222,22 +249,29 @@ final class Asec
      * @param  Buffer $buffer Fresh buffer
      * @return void
      */
-    private function rebuild(Buffer $buffer): void
+    private function rebuild(Buffer $buffer)
     {
         foreach ($this->buffer->pooled ?? [] as $p) {
-            if ($p->action === 'delete') {
-                $head = &self::$master;
-                $arr = explode('.', $p->selector);
+            $head = &self::$master;
+            $arr = explode('.', $p->selector);
+            if ($p->action === 'set') {
                 foreach ($arr as $key) {
-                    if (!isset($head->$key)) {
+                    if (!isset($head[$key])) {
+                        $head[$key] = [];
+                    }
+                    $head = &$head[$key];
+                }
+                $head = $p->value;
+            } elseif ($p->action === 'delete') {
+                foreach ($arr as $key) {
+                    if (!isset($head[$key])) {
                         break;
                     }
-                    $head = &$head->$key;
+                    $head = &$head[$key];
                 }
+                $head = null;
             }
 
-            $value = $head;
-            $head = null;
         }
         $this->buffer = $buffer;
         self::$temporary = [];
