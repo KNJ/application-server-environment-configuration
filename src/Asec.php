@@ -2,11 +2,11 @@
 
 namespace Wazly;
 
-use Wazly\Asec\{Buffer, Singleton};
+use Wazly\ASEC\{Buffer, Singleton};
 use BadMethodCallException;
 use RuntimeException;
 
-final class Asec
+final class ASEC
 {
     use Singleton;
 
@@ -47,7 +47,7 @@ final class Asec
 
     /**
      * configure() sets your configuration.
-     * - filename:  Asec loads this file (default: .asec.json)
+     * - filename:  ASEC loads this file (default: .asec.json)
      * - permanent: Whether to write changes to the file (default: false)
      *
      * 環境設定を行う
@@ -61,7 +61,7 @@ final class Asec
     public static function configure(array $conf = [])
     {
         if (self::hasInstance() === true) {
-            throw new BadMethodCallException('Asec::configure() must be called before the instance is created.');
+            throw new BadMethodCallException('ASEC::configure() must be called before the instance is created.');
         }
 
         if (isset($conf['filename'])) {

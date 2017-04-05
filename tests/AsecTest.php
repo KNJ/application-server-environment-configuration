@@ -2,12 +2,12 @@
 
 namespace Wazly;
 
-class AsecTest extends \PHPUnit\Framework\TestCase
+class ASECTest extends \PHPUnit\Framework\TestCase
 {
     public function setUp()
     {
-        Asec::clearInstance();
-        Asec::configure([
+        ASEC::clearInstance();
+        ASEC::configure([
             'filename' => '.asec.test.json',
         ]);
     }
@@ -17,69 +17,69 @@ class AsecTest extends \PHPUnit\Framework\TestCase
         $filename = '.asec.not.found.json';
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage($filename);
-        Asec::configure([
+        ASEC::configure([
             'filename' => $filename,
         ]);
-        Asec::getInstance();
+        ASEC::getInstance();
     }
 
     public function testInvalidJson()
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Invalid');
-        Asec::configure([
+        ASEC::configure([
             'filename' => '.asec.invalid.json',
         ]);
-        Asec::getInstance();
+        ASEC::getInstance();
     }
 
     public function testGetRoot()
     {
-        $this->assertSame(realpath(__DIR__ . '/../'), Asec::getRoot());
+        $this->assertSame(realpath(__DIR__ . '/../'), ASEC::getRoot());
     }
 
     public function testGetString()
     {
-        $this->assertSame('asec_test', Asec::get('name'));
+        $this->assertSame('asec_test', ASEC::get('name'));
     }
 
     public function testGetInt()
     {
-        $this->assertSame(18, Asec::get('number'));
+        $this->assertSame(18, ASEC::get('number'));
     }
 
     public function testGetBool()
     {
-        $this->assertTrue(Asec::get('public'));
-        $this->assertFalse(Asec::get('private'));
+        $this->assertTrue(ASEC::get('public'));
+        $this->assertFalse(ASEC::get('private'));
     }
 
     public function testGetArray()
     {
-        $this->assertArraySubset(['foo', 'bar', 'baz'], Asec::get('items'));
+        $this->assertArraySubset(['foo', 'bar', 'baz'], ASEC::get('items'));
     }
 
     public function testGetNested()
     {
-        $this->assertSame('here', Asec::get('deep.and.deep.key'));
-        $this->assertSame('there', Asec::get('deep.and.deep.and.mazed.key'));
+        $this->assertSame('here', ASEC::get('deep.and.deep.key'));
+        $this->assertSame('there', ASEC::get('deep.and.deep.and.mazed.key'));
     }
 
     public function testGetDefault()
     {
-        $this->assertNull(Asec::get('fake.key'));
-        $this->assertSame('fake', Asec::get('fake.key', 'fake'));
+        $this->assertNull(ASEC::get('fake.key'));
+        $this->assertSame('fake', ASEC::get('fake.key', 'fake'));
     }
 
     public function testTakeSingleValue()
     {
-        $this->assertSame('asec_test', Asec::take('name'));
-        $this->assertSame(18, Asec::take('number'));
-        $this->assertTrue(Asec::take('public'));
-        $this->assertFalse(Asec::take('private'));
-        $this->assertArraySubset(['foo', 'bar', 'baz'], Asec::take('items'));
-        $this->assertNull(Asec::take('fake.key'));
-        $this->assertSame('fake', Asec::take('fake.key', 'fake'));
+        $this->assertSame('asec_test', ASEC::take('name'));
+        $this->assertSame(18, ASEC::take('number'));
+        $this->assertTrue(ASEC::take('public'));
+        $this->assertFalse(ASEC::take('private'));
+        $this->assertArraySubset(['foo', 'bar', 'baz'], ASEC::take('items'));
+        $this->assertNull(ASEC::take('fake.key'));
+        $this->assertSame('fake', ASEC::take('fake.key', 'fake'));
     }
 
     public function testTakeMultipleValues()
@@ -95,7 +95,7 @@ class AsecTest extends \PHPUnit\Framework\TestCase
                     ]
                 ],
             ],
-            Asec::take('deep.and')
+            ASEC::take('deep.and')
         );
         $this->assertArraySubset(
             [
@@ -112,7 +112,7 @@ class AsecTest extends \PHPUnit\Framework\TestCase
                     'name' => 'Eve',
                 ]
             ],
-            Asec::take('object.and.list')
+            ASEC::take('object.and.list')
         );
     }
 
@@ -122,8 +122,8 @@ class AsecTest extends \PHPUnit\Framework\TestCase
     public function testSetString()
     {
         $str = '文字列';
-        $this->assertSame($str, Asec::set('set.string', $str));
-        $this->assertSame($str, Asec::get('set.string'));
+        $this->assertSame($str, ASEC::set('set.string', $str));
+        $this->assertSame($str, ASEC::get('set.string'));
     }
 
     /**
@@ -132,8 +132,8 @@ class AsecTest extends \PHPUnit\Framework\TestCase
     public function testSetInt()
     {
         $num = 2017;
-        $this->assertSame($num, Asec::set('set.int', $num));
-        $this->assertSame($num, Asec::get('set.int'));
+        $this->assertSame($num, ASEC::set('set.int', $num));
+        $this->assertSame($num, ASEC::get('set.int'));
     }
 
     /**
@@ -142,8 +142,8 @@ class AsecTest extends \PHPUnit\Framework\TestCase
     public function testSetArray()
     {
         $list = ['一', '二', '三', '四'];
-        $this->assertArraySubset($list, Asec::set('set.list', $list));
-        $this->assertSame($list, Asec::get('set.list'));
+        $this->assertArraySubset($list, ASEC::set('set.list', $list));
+        $this->assertSame($list, ASEC::get('set.list'));
 
         $kv = [
             'name' => 'KNJ',
@@ -156,8 +156,8 @@ class AsecTest extends \PHPUnit\Framework\TestCase
                 'facebook' => null,
             ]
         ];
-        $this->assertArraySubset($kv, Asec::set('set.kv', $kv));
-        $this->assertSame($kv, Asec::get('set.kv'));
+        $this->assertArraySubset($kv, ASEC::set('set.kv', $kv));
+        $this->assertSame($kv, ASEC::get('set.kv'));
     }
 
     /**
@@ -169,7 +169,7 @@ class AsecTest extends \PHPUnit\Framework\TestCase
     {
         $mass = [
             'app' => [
-                'name' => 'Asec',
+                'name' => 'ASEC',
                 'environments' => [
                     'production',
                     'development',
@@ -178,10 +178,10 @@ class AsecTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $this->assertArraySubset($mass, Asec::assign($mass));
-        $this->assertSame($mass['app']['name'], Asec::get('app.name'));
-        $this->assertArraySubset($mass['app']['environments'], Asec::get('app.environments'));
-        $this->assertEquals($mass['app'], Asec::take('app'));
+        $this->assertArraySubset($mass, ASEC::assign($mass));
+        $this->assertSame($mass['app']['name'], ASEC::get('app.name'));
+        $this->assertArraySubset($mass['app']['environments'], ASEC::get('app.environments'));
+        $this->assertEquals($mass['app'], ASEC::take('app'));
     }
 
     /**
@@ -191,8 +191,8 @@ class AsecTest extends \PHPUnit\Framework\TestCase
     public function testDelete()
     {
         // Soft delete
-        $this->assertSame('asec_test', Asec::delete('name'));
-        $this->assertNull(Asec::get('name'));
+        $this->assertSame('asec_test', ASEC::delete('name'));
+        $this->assertNull(ASEC::get('name'));
         $this->assertEquals(
             [
                 'key' => 'here',
@@ -202,12 +202,12 @@ class AsecTest extends \PHPUnit\Framework\TestCase
                     ]
                 ]
             ],
-            Asec::delete('deep.and.deep')
+            ASEC::delete('deep.and.deep')
         );
 
         // Hard delete and rebuild
-        $this->assertNull(Asec::take('deep.and.deep'));
-        $this->assertNull(Asec::get('name'));
+        $this->assertNull(ASEC::take('deep.and.deep'));
+        $this->assertNull(ASEC::get('name'));
     }
 
     /**
@@ -218,9 +218,9 @@ class AsecTest extends \PHPUnit\Framework\TestCase
     {
         // set -> delete
         $selector = 'this.message.will.be.deleted.soon';
-        Asec::set($selector, 'remain');
-        Asec::delete($selector);
-        $this->assertNull(Asec::get($selector));
+        ASEC::set($selector, 'remain');
+        ASEC::delete($selector);
+        $this->assertNull(ASEC::get($selector));
 
         // assign => delete
         $mass = [
@@ -231,13 +231,13 @@ class AsecTest extends \PHPUnit\Framework\TestCase
                 ]
             ]
         ];
-        Asec::assign($mass);
-        Asec::delete('I.am.a');
-        $this->assertNull(Asec::get('I.am.a'));
+        ASEC::assign($mass);
+        ASEC::delete('I.am.a');
+        $this->assertNull(ASEC::get('I.am.a'));
 
         // assign => set
-        Asec::set('I.was.a', 'champion');
-        $this->assertSame('champion', Asec::get('I.was.a'));
+        ASEC::set('I.was.a', 'champion');
+        $this->assertSame('champion', ASEC::get('I.was.a'));
 
         // assign => take
         $this->assertArraySubset(
@@ -249,7 +249,7 @@ class AsecTest extends \PHPUnit\Framework\TestCase
                     'a' => 'champion',
                 ]
             ],
-            Asec::take('I')
+            ASEC::take('I')
         );
     }
 }

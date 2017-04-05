@@ -1,6 +1,6 @@
 <?php
 
-namespace Wazly\Asec;
+namespace Wazly\ASEC;
 
 trait Singleton
 {
