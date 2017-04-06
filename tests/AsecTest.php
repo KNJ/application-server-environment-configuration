@@ -160,6 +160,28 @@ class ASECTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($kv, ASEC::get('set.kv'));
     }
 
+    public function testCannotSetObject()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('must not be an object');
+        ASEC::set('object.value', (object)['id' => 123]);
+    }
+
+    public function testCannotSetArrayContainingObject()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('must not contain any objects');
+        ASEC::set(
+            'object.value',
+            [
+                'id' => 123,
+                'status' => (object)[
+                    'public' => false,
+                ],
+            ]
+        );
+    }
+
     /**
      * @depends testGetString
      * @depends testGetArray
@@ -182,6 +204,20 @@ class ASECTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($mass['app']['name'], ASEC::get('app.name'));
         $this->assertArraySubset($mass['app']['environments'], ASEC::get('app.environments'));
         $this->assertEquals($mass['app'], ASEC::take('app'));
+    }
+
+    public function testCannotAssignObject()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('must not contain any objects');
+        ASEC::assign(
+            [
+                'id' => 456,
+                'status' => (object)[
+                    'public' => true,
+                ],
+            ]
+        );
     }
 
     /**

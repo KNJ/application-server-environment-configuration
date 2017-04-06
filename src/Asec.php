@@ -4,6 +4,7 @@ namespace Wazly;
 
 use Wazly\ASEC\{Buffer, Singleton};
 use BadMethodCallException;
+use InvalidArgumentException;
 use RuntimeException;
 
 final class ASEC
@@ -61,7 +62,7 @@ final class ASEC
     public static function configure(array $conf = [])
     {
         if (self::hasInstance() === true) {
-            throw new BadMethodCallException('ASEC::configure() must be called before the instance is created.');
+            throw new BadMethodCallException(__CLASS__.'::configure() must be called before the instance is created.');
         }
 
         if (isset($conf['filename'])) {
@@ -141,12 +142,26 @@ final class ASEC
      *
      * キーに値をセットする
      *
-     * @param  string $selector Position of the key
-     * @param  mixed  $value    Value of the key
-     * @return mixed            New value of the key
+     * @param  string $selector         Position of the key
+     * @param  mixed  $value            Value of the key
+     * @throws InvalidArgumentException $value must not be an object
+     * @return mixed                    New value of the key
      */
     public static function set(string $selector, $value)
     {
+        if (is_object($value)) {
+            throw new InvalidArgumentException(
+                'Argument 2 passed to '.__CLASS__.'::set() must not be an object.'
+            );
+        } elseif (is_array($value)) {
+            array_walk_recursive($value, function($v) {
+            if (is_object($v)) {
+                throw new InvalidArgumentException(
+                    'Argument 2 passed to '.__CLASS__.'::set() must not contain any objects.'
+                );
+            }
+        });
+        }
         self::getInstance()->buffer->pool('set', $selector, $value);
         self::$temporary[$selector] = $value;
 
@@ -158,17 +173,23 @@ final class ASEC
      *
      * 再帰的にキーに値をセットする
      *
-     * @param  array $mass Associative array
+     * @param  array $mass              Associative array
+     * @throws InvalidArgumentException $mass must not contain objects
      * @return array
      */
     public static function assign(array $mass): array
     {
+        array_walk_recursive($mass, function($value) {
+            if (is_object($value)) {
+                throw new InvalidArgumentException('Argument 1 passed to '.__CLASS__.'::assign() must not contain any objects.');
+            }
+        });
         $list = [];
         $instance = self::getInstance();
         $instance->walk($mass, '', $list);
 
         foreach ($list as $selector => $value) {
-            $instance->set($selector, $value);
+            self::set($selector, $value);
         }
 
         $instance->rebuild(new Buffer);
@@ -206,11 +227,6 @@ final class ASEC
         }
 
         return $value;
-    }
-
-    public static function output()
-    {
-        return json_encode(self::$master, JSON_PRETTY_PRINT);
     }
 
     /**
